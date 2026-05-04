@@ -1,39 +1,48 @@
-# Spherical Shallow Water Equations (SWE) Training
+# DIAGNO: Diagonal Spherical Neural Operators for Heterogeneous Earth Dynamics Modeling
 
-This repository contains the training code and configuration scripts for modeling Spherical Shallow Water Equations (SWE) using PyTorch. 
+This repository provides a complete research framework for global climate and oceanic forecasting within the field of AI for Science (AI4S). It includes the official implementation of the **DIAGNO** (Diagonal Spherical Neural Operator) model, training datasets, distributed training code, and comprehensive parameter configurations.
+
+## 🌟 Overview
+
+Unlike standard neural operators that assume rotation equivariance, **DIAGNO** is designed to capture the heterogeneous dynamics of the Earth system. The model explicitly seeks to break rotation equivariance assumptions to shift the paradigm toward explicit cross-modal interaction. It isolates zonal and meridional interactions by fusing spectral components along the diagonal where $l-m = \text{constant}$.
 
 ## 🚀 Quick Start
 
-To start the training process, simply execute the provided bash script. This script automatically handles the Distributed Data Parallel (DDP) environment setup and starts the training loop:
+To initiate the training pipeline, ensure your environment meets the requirements (Python, PyTorch, xarray, Cartopy) and execute the provided bash script. This script automatically orchestrates the Distributed Data Parallel (DDP) environment:
 ```bash
 bash run_train.sh
 ```
 
 ## ⚙️ Configuration Guide
 
-To make experiments manageable and reproducible, this project separates the training hardware/flow configuration from the specific model architecture configuration.
+The project separates the training hardware/flow configuration from the specific model architecture configuration.
 
 ### 1. Training Parameters (`run_train.sh`)
-The global training flow, hardware settings, and hyperparameters are controlled directly within the `run_train.sh` script. Open this file to modify:
-* **`ROOT_PATH`**: The output directory where model checkpoints, logs, and stats will be saved.
-* **`MODELS`**: A space-separated list of models to train sequentially (e.g., `"diagno_e128 diagno_e64"`).
-* **`EPOCHS`**: Define `PRETRAIN_EPOCHS` (1-step training) and `FINETUNE_EPOCHS` (2-step autoregressive training).
-* **`LEARNING RATES`**: Independent learning rates for pretraining (`PRETRAIN_LR`) and finetuning (`FINETUNE_LR`).
-* **`BATCH_SIZE`**: Training batch size per GPU.
-* **`Hardware Setup`**: Update `CUDA_VISIBLE_DEVICES` and `nproc_per_node` to match your local multi-GPU setup.
+Global execution settings and hyperparameters are managed within the shell script:
+* **`ROOT_PATH`**: The output directory where model checkpoints, logs, and statistics will be saved.
+* **`MODELS`**: A space-separated list of model variants to train sequentially (e.g., `diagno_e128`).
+* **`EPOCHS`**: Defines both `PRETRAIN_EPOCHS` (1-step) and `FINETUNE_EPOCHS` (2-step autoregressive).
+* **`LEARNING RATES`**: Independent learning rates for pretraining and finetuning.
+* **`Hardware Setup`**: Update `CUDA_VISIBLE_DEVICES` and `nproc_per_node` to match your multi-GPU or Slurm setup.
 
 ### 2. Model Architecture (`model_registry`)
-The specific architectural parameters for each neural network model (e.g., hidden layers, network dimensions, specific block configurations) are defined in the `model_registry` module. 
+The specific architectural parameters (e.g., embedding dimensions, hidden layers) for DiagNO variants are defined in the `model_registry` module. Adjust these definitions before execution to modify the model capacity.
 
-If you need to adjust a model's internal structure or add a new model variant, modify the specific definitions within the `model_registry` codebase before executing the training script.
+## 📊 Data Availability
+
+This repository balances accessibility with the large-scale nature of Earth system reanalysis:
+* **SSWE Dataset**: The synthetic dataset for **Spherical Shallow Water Equations** experiments is provided within this package for immediate reproducibility.
+* **ERA5 & GLORYS12**: Due to their extreme size, global reanalysis datasets such as **ERA5** (atmospheric) and **GLORYS12** (oceanic) are not hosted here.
+* **Download Instructions**: Users should download these datasets from their respective official portals, such as the Copernicus Climate Data Store or the Copernicus Marine Service.
 
 ## 📁 Output Structure
-During training, the script will automatically create the `ROOT_PATH` directory and generate subfolders for each model. Inside each model's directory, you will find:
-* `best_model_pretrain.pt` / `best_model_finetune.pt`: The model weights with the lowest validation loss.
-* `latest_model.pt`: Checkpoint for resuming training.
-* `pretrain_history.csv` / `finetune_history.csv`: Training metrics (Loss, MAE, MSE, RMSE) logged per epoch.
+
+The training pipeline automatically organizes results within the `ROOT_PATH`:
+* `best_model_pretrain.pt` / `best_model_finetune.pt`: Optimized weights for each stage.
+* `latest_model.pt`: Checkpoint for seamless recovery from hardware interruptions.
+* `history.csv`: Per-epoch logs for Loss, MAE, MSE, and RMSE metrics.
 
 ## 📚 Code References
-Our implementation utilizes and adapts code from the following open-source libraries:
-* **[Neural-Solver-Library]**: https://github.com/thuml/Neural-Solver-Library
-* **[Torch-Harmonics]**: https://github.com/NVIDIA/torch-harmonics
+Our implementation integrates and adapts specialized components from the following open-source projects:
+* **Neural-Solver-Library**: https://github.com/thuml/Neural-Solver-Library
+* **Torch-Harmonics**: https://github.com/NVIDIA/torch-harmonics
