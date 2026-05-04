@@ -1,3 +1,4 @@
+# Environment: Python 3.9.23
 aiobotocore==2.26.0
 aiohappyeyeballs==2.6.1
 aiohttp==3.13.2
