@@ -4,7 +4,7 @@ This repository provides a complete research framework for global climate and oc
 
 ## Overview
 
-Unlike standard neural operators that assume rotation equivariance, **DIAGNO** is designed to capture the heterogeneous dynamics of the Earth system. The model explicitly seeks to break rotation equivariance assumptions to shift the paradigm toward explicit cross-modal interaction. It isolates zonal and meridional interactions by fusing spectral components along the diagonal where $l-m = \text{constant}$.
+Unlike standard neural operators that assume rotation equivariance, **DIAGNO** is designed to capture the heterogeneous dynamics of the Earth system. The model explicitly seeks to break rotation equivariance assumptions to shift the paradigm toward explicit cross-modal interaction.
 
 ## Quick Start
 
@@ -29,6 +29,23 @@ Global execution settings and hyperparameters are managed within the shell scrip
 ### 2. Model Architecture (`model_registry`)
 The specific architectural parameters (e.g., embedding dimensions, hidden layers) for DiagNO variants are defined in the `model_registry` module. Adjust these definitions before execution to modify the model capacity.
 
+## Inference and Evaluation
+
+To comprehensively evaluate the trained models, we provide a distributed inference pipeline that performs continuous autoregressive rollouts and computes physical evaluation metrics.
+
+### Running Inference
+Once your model is finetuned, you can execute the inference script to evaluate its long-term forecasting capabilities:
+
+```bash
+bash run_infer.sh
+```
+
+### Inference Configuration (`run_infer.sh`)
+Key parameters for evaluation can be customized directly in the inference shell script:
+* **`INFER_STEPS`**: The total number of autoregressive steps to simulate (e.g., 10 steps for long-term forecasting).
+* **`SAVE_STEPS`**: A space-separated list specifying which discrete prediction steps should save their physical quantity tensors for downstream visualization (e.g., "5 10").
+* **`NUM_EVAL_SAMPLES`**: The total number of samples from the validation/test dataset to evaluate.
+
 ## Data Availability
 
 This repository balances accessibility with the large-scale nature of Earth system reanalysis:
@@ -38,10 +55,11 @@ This repository balances accessibility with the large-scale nature of Earth syst
 
 ## Output Structure
 
-The training pipeline automatically organizes results within the `ROOT_PATH`:
-* `best_model_pretrain.pt` / `best_model_finetune.pt`: Optimized weights for each stage.
-* `latest_model.pt`: Checkpoint for seamless recovery from hardware interruptions.
-* `history.csv`: Per-epoch logs for Loss, MAE, MSE, and RMSE metrics.
+The training and inference pipelines automatically organize results within the `ROOT_PATH`:
+* **Model Weights**: `best_model_pretrain.pt` / `best_model_finetune.pt` / `latest_model.pt`.
+* **Training Logs**: `history.csv` logs per-epoch Loss and evaluation metrics.
+* **Inference Metrics**: `metrics_{model_name}_{steps}steps.csv` containing step-by-step physical error metrics (MAE, MSE, RMSE) for the entire autoregressive rollout.
+* **Saved Tensors**: `specific_steps_results_{steps}steps/` containing merged `.npy` arrays for the ground truth (`tar`) and predictions (`prd`) at the time steps specified by `SAVE_STEPS`.
 
 ## Code References
 Our implementation integrates and adapts specialized components from the following open-source projects:
@@ -88,7 +106,7 @@ Install PyTorch 2.4.0 and its vision/audio extensions. We specifically pull from
 
 ```bash
 pip install torch==2.4.0 torchvision==0.19.0 torchaudio==2.4.0 \
-    --index-url https://download.pytorch.org/whl/cu121
+    --index-url [https://download.pytorch.org/whl/cu121](https://download.pytorch.org/whl/cu121)
 ```
 
 **Step 4: Install PyTorch Geometric (PyG) Dependencies**  
@@ -96,7 +114,7 @@ Install the underlying graph neural network operations.
 
 ```bash
 pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv \
-    -f https://data.pyg.org/whl/torch-2.4.0+cu121.html
+    -f [https://data.pyg.org/whl/torch-2.4.0+cu121.html](https://data.pyg.org/whl/torch-2.4.0+cu121.html)
 ```
 
 **Step 5: Install Auxiliary Tools, Storage, and Data APIs**  
